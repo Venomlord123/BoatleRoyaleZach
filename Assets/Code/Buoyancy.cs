@@ -14,24 +14,42 @@ public class Buoyancy : MonoBehaviour
 	public static event Action<GameObject, Vector3, Vector3> OnSplash;
 	public static event Action<GameObject> OnDestroyed;
 
-	public MeshFilter meshFilter;
-	public Rigidbody rigidbody;
+	
 
 	Vector3 worldVertPos;
+	//My Changes to code
+	public MeshFilter meshFilter;
+	public Rigidbody rigidbody;
+	private Vector3 forceAmount;
+	private Vector3 forcePosition;
+	public Transform t;
+	private int index;
+	private float deltaTime;
 
+
+	private Vector3[] meshNormals;
+	private Vector3[] meshVertices;
+
+	private void Start()
+	{
+		meshNormals = GetComponent<MeshFilter>().mesh.normals;
+		meshVertices = GetComponent<MeshFilter>().mesh.vertices;
+		t = GetComponent<Transform>();
+	}
 
 	void Update()
 	{
+		deltaTime = Time.deltaTime;
 		CalculateForces();
 	}
 
 	private void CalculateForces()
 	{
 		underwaterVerts = 0;
-
-		for (var index = 0; index < meshFilter.mesh.normals.Length; index++)
+		t.position = transform.position;
+		for (index = 0; index < meshNormals.Length; index++)
 		{
-			worldVertPos = transform.position + transform.TransformDirection(meshFilter.mesh.vertices[index]);
+			worldVertPos = t.position + t.TransformDirection(meshVertices[index]);
 			if (worldVertPos.y < waterLineHack)
 			{
 				// Splashes only on surface of water plane
@@ -46,8 +64,8 @@ public class Buoyancy : MonoBehaviour
 						}
 					}
 				}
-				Vector3	forceAmount = (transform.TransformDirection(-meshFilter.mesh.normals[index]) * forceScalar) * Time.deltaTime;
-				Vector3 forcePosition = transform.position + transform.TransformDirection(meshFilter.mesh.vertices[index]);
+				forceAmount = (t.TransformDirection(-meshNormals[index]) * forceScalar) * deltaTime;
+				forcePosition = transform.position + t.TransformDirection(meshVertices[index]);
 				rigidbody.AddForceAtPosition(forceAmount, forcePosition, ForceMode.Force);
 				underwaterVerts++;
 			}
@@ -58,9 +76,10 @@ public class Buoyancy : MonoBehaviour
 				break;
 			}
 			// Drag for percentage underwater
-			rigidbody.drag = (underwaterVerts / (float)meshFilter.mesh.vertices.Length) * dragScalar;
-			rigidbody.angularDrag = (underwaterVerts / (float)meshFilter.mesh.vertices.Length) * dragScalar;
+			
 		}
+		rigidbody.drag = (underwaterVerts / (float)meshVertices.Length) * dragScalar;
+		rigidbody.angularDrag = (underwaterVerts / (float)meshVertices.Length) * dragScalar;
 	}
 
 	private void DestroyParentGO()

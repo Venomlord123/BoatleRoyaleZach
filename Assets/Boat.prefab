@@ -65,6 +65,7 @@ MonoBehaviour:
   dragScalar: 12.48
   meshFilter: {fileID: 33858541532472224}
   rigidbody: {fileID: 54061361556925660}
+  transform: {fileID: 4110597348489084}
 --- !u!54 &54061361556925660
 Rigidbody:
   m_ObjectHideFlags: 0
